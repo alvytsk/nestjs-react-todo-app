@@ -2,7 +2,6 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 type RemoteTodoItem = {
   id: number;
-  userId: number;
   title: string;
   completed: boolean;
 };
@@ -34,7 +33,15 @@ const initialState: TodoState = {
 };
 
 export const fetchTodos = createAsyncThunk('users/fetchTodos', async () => {
-  const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+  // const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+  const response = await fetch('http://localhost:3001/todos', {
+    mode: 'no-cors',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  console.log(response);
   return response.json();
 });
 
@@ -75,11 +82,8 @@ export const todoSlice = createSlice({
       state.loading = true;
     });
     builder.addCase(fetchTodos.fulfilled, (state, { payload }) => {
-      const filtered = payload
-        .filter((item: RemoteTodoItem) => item.userId === 1)
-        .map(({ userId, ...rest }) => rest)
-        .splice(4, 10);
-      state.data = filtered;
+      console.log(payload);
+      state.data = payload;
       state.loading = false;
       state.total = state.data.length;
       state.completed = state.data.filter((item) => item.completed).length;

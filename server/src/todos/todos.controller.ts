@@ -35,13 +35,11 @@ export class TodosController {
 
   @Delete(':id')
   removeTodo(@Param('id') id: number) {
-    return 'Remove ' + id;
+    return this.todoService.removeTodo(id);
   }
 
   @Put(':id')
   updateTodo(@Body() body: UpdateTodoDto, @Param('id') id: number) {
-    return (
-      'Update ' + id + ` Title: ${body.title} Completed: ${body.completed}`
-    );
+    return this.todoService.updateTodo(id, body);
   }
 }
