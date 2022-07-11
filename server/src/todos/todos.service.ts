@@ -27,16 +27,13 @@ export class TodosService {
     return await newTodo.save();
   }
 
-  removeTodo(id: number) {
-    const index = this.todos.findIndex((item) => item.id === id);
-    this.todos.splice(index, 1);
+  async removeTodo(id: number) {
+    return await this.todoModel.deleteOne({ _id: id });
   }
 
-  updateTodo(id: number, body: UpdateTodoDto) {
-    const index = this.todos.findIndex((item) => item.id === id);
-
-    this.todos[index] = {
-      ...body,
-    };
+  async updateTodo(id: number, body: UpdateTodoDto) {
+    const record = await this.todoModel.findById(id);
+    record.title = body.title;
+    return await record.save();
   }
 }

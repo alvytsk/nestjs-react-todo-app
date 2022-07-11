@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import { deleteTodo, editTodo, setCompleted, TodoItem } from '~/state/todoSlice';
-import { AppDispatch } from '~/state';
+import { useAppDispatch } from '~/hooks/state';
 
 const TodoItem = (item: TodoItem) => {
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -11,7 +10,7 @@ const TodoItem = (item: TodoItem) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const checkboxRef = useRef<HTMLInputElement>(null);
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     setEditBtnTitle(editMode ? 'Done' : 'Edit');
@@ -27,12 +26,7 @@ const TodoItem = (item: TodoItem) => {
 
   const onTodoDelete = (event) => {
     event.stopPropagation();
-
-    dispatch(
-      deleteTodo({
-        id: item.id
-      })
-    );
+    dispatch(deleteTodo({ _id: item._id }));
   };
 
   const onTodoEdit = (event) => {
@@ -42,7 +36,7 @@ const TodoItem = (item: TodoItem) => {
       setFocused(false);
       dispatch(
         editTodo({
-          id: item.id,
+          _id: item._id,
           title: value
         })
       );
@@ -72,7 +66,7 @@ const TodoItem = (item: TodoItem) => {
     if (item.completed !== event.target.checked) {
       dispatch(
         setCompleted({
-          id: item.id,
+          id: item._id,
           completed: event.target.checked
         })
       );
@@ -88,7 +82,7 @@ const TodoItem = (item: TodoItem) => {
 
     dispatch(
       setCompleted({
-        id: item.id,
+        id: item._id,
         completed: !checkboxRef.current?.checked
       })
     );

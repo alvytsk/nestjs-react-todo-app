@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '~/hooks/state';
 import { addTodo } from '~/state/todoSlice';
 
 export type TodoAddFormProps = {
@@ -8,17 +8,11 @@ export type TodoAddFormProps = {
 
 const TodoAddForm = ({ loading }: TodoAddFormProps) => {
   const [title, setTitle] = useState<string>('');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const onAddTodo = () => {
     if (!title) return;
-
-    dispatch(
-      addTodo({
-        title: title
-      })
-    );
-
+    dispatch(addTodo({ title }));
     setTitle('');
   };
 
