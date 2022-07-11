@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Res,
 } from '@nestjs/common';
 import { AddTodoDto } from './dto/add-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -18,8 +19,12 @@ export class TodosController {
   constructor(private readonly todoService: TodosService) {}
 
   @Get()
-  getAll() {
-    return this.todoService.getAll();
+  async getAll(@Res() res) {
+    const todos = await this.todoService.getAll();
+    return res.status(HttpStatus.OK).json({
+      status: 200,
+      data: todos,
+    });
   }
 
   @Get(':id')
@@ -28,9 +33,12 @@ export class TodosController {
   }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  addTodo(@Body() body: AddTodoDto) {
-    return this.todoService.addTodo(body);
+  async addTodo(@Res() res, @Body() body: AddTodoDto) {
+    const todo = await this.todoService.addTodo(body);
+    return res.status(HttpStatus.CREATED).json({
+      status: 201,
+      data: todo,
+    });
   }
 
   @Delete(':id')

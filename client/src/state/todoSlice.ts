@@ -34,7 +34,7 @@ const initialState: TodoState = {
 
 export const fetchTodos = createAsyncThunk('users/fetchTodos', async () => {
   // const response = await fetch('https://jsonplaceholder.typicode.com/todos');
-  const response = await fetch('http://localhost:3001/todos', {
+  const response = await fetch('http://localhost:3001/api/todos', {
     mode: 'no-cors',
     method: 'get',
     headers: {

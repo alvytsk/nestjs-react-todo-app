@@ -12,21 +12,19 @@ export class TodosService {
   private todos = [];
 
   async getAll(): Promise<Todo[]> {
-    return this.todoModel.find().exec();
+    return await this.todoModel.find().exec();
   }
 
   async getTodo(id: number): Promise<Todo> {
-    return this.todoModel.findById(id);
+    return await this.todoModel.findById(id);
   }
 
-  addTodo(todoDto: AddTodoDto) {
-    const id = this.todos.length ? this.todos[this.todos.length - 1].id + 1 : 0;
-
-    this.todos.push({
+  async addTodo(todoDto: AddTodoDto) {
+    const newTodo = new this.todoModel({
       ...todoDto,
       completed: false,
-      id: id,
     });
+    return await newTodo.save();
   }
 
   removeTodo(id: number) {
