@@ -33,7 +33,12 @@ export class TodosService {
 
   async updateTodo(id: number, body: UpdateTodoDto) {
     const record = await this.todoModel.findById(id);
-    record.title = body.title;
+    if ('title' in body) {
+      record.title = body.title;
+    }
+    if ('completed' in body) {
+      record.completed = body.completed;
+    }
     return await record.save();
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { deleteTodo, editTodo, setCompleted, TodoItem } from '~/state/todoSlice';
+import { deleteTodo, editTodo, toggleCompleted, TodoItem } from '~/state/todoSlice';
 import { useAppDispatch } from '~/hooks/state';
 
 const TodoItem = (item: TodoItem) => {
@@ -65,8 +65,8 @@ const TodoItem = (item: TodoItem) => {
   const onTodoCompleted = (event) => {
     if (item.completed !== event.target.checked) {
       dispatch(
-        setCompleted({
-          id: item._id,
+        toggleCompleted({
+          _id: item._id,
           completed: event.target.checked
         })
       );
@@ -81,8 +81,8 @@ const TodoItem = (item: TodoItem) => {
     if (editMode) return;
 
     dispatch(
-      setCompleted({
-        id: item._id,
+      toggleCompleted({
+        _id: item._id,
         completed: !checkboxRef.current?.checked
       })
     );

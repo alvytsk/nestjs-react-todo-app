@@ -84,72 +84,97 @@ export const editTodo = createAsyncThunk('todos/editTodo', async (payload: TodoD
   }
 });
 
+export const toggleCompleted = createAsyncThunk(
+  'todos/toggleCompleted',
+  async (payload: TodoDto) => {
+    const response = await fetch('http://localhost:3001/api/todos/' + payload._id, {
+      method: 'PUT',
+      body: JSON.stringify({ completed: payload.completed }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.ok) {
+      return { _id: payload._id, completed: payload.completed };
+    }
+  }
+);
+
 export const todoSlice = createSlice({
   name: 'todo',
   initialState,
-  reducers: {
-    // editTodo: (state, { payload }) => {
-    //   state.data[getIndex(payload.id, state.data)].title = payload.title;
-    // },
-    setCompleted: (state, { payload }) => {
-      const { completed } = payload;
-      state.data[getIndex(payload.id, state.data)].completed = completed;
-      completed ? state.completed++ : state.completed--;
-    }
-  },
-  extraReducers: (builder) => {
-    builder.addCase(fetchTodos.pending, (state: TodoState) => {
+  reducers: {},
+  extraReducers: {
+    [fetchTodos.pending.type]: (state: TodoState) => {
       state.data = [];
       state.loading = true;
-    });
-    builder.addCase(fetchTodos.fulfilled, (state: TodoState, { payload }) => {
+    },
+    [fetchTodos.fulfilled.type]: (state: TodoState, { payload }) => {
       state.data = payload.data;
       state.loading = false;
       state.total = state.data.length;
-      // state.completed = state.data.filter((item) => item.completed).length;
-    });
-    builder.addCase(fetchTodos.rejected, (state: TodoState) => {
+      state.completed = state.data.filter((item) => item.completed).length;
+    },
+    [fetchTodos.rejected.type]: (state: TodoState) => {
       state.loading = false;
-    });
+    },
 
-    builder.addCase(addTodo.pending, (state: TodoState) => {
+    [addTodo.pending.type]: (state: TodoState) => {
       state.loading = true;
-    });
-    builder.addCase(addTodo.fulfilled, (state: TodoState, { payload }) => {
+    },
+    [addTodo.fulfilled.type]: (state: TodoState, { payload }) => {
       state.loading = false;
       state.data.push(payload.data);
-    });
-    builder.addCase(addTodo.rejected, (state: TodoState) => {
+      state.total = state.data.length;
+    },
+    [addTodo.rejected.type]: (state: TodoState) => {
       state.loading = false;
-    });
+    },
 
-    builder.addCase(deleteTodo.pending, (state: TodoState) => {
+    [deleteTodo.pending.type]: (state: TodoState) => {
       state.loading = true;
-    });
-    builder.addCase(deleteTodo.fulfilled, (state: TodoState, { payload }) => {
+    },
+    [deleteTodo.fulfilled.type]: (state: TodoState, { payload }) => {
       state.loading = false;
       payload && state.data.splice(getIndex(payload, state.data), 1);
-    });
-    builder.addCase(deleteTodo.rejected, (state: TodoState) => {
+      state.total = state.data.length;
+      state.completed = state.data.filter((item) => item.completed).length;
+    },
+    [deleteTodo.rejected.type]: (state: TodoState) => {
       state.loading = false;
-    });
+    },
 
-    builder.addCase(editTodo.pending, (state: TodoState) => {
+    [editTodo.pending.type]: (state: TodoState) => {
       state.loading = true;
-    });
-    builder.addCase(editTodo.fulfilled, (state: TodoState, { payload }) => {
+    },
+    [editTodo.fulfilled.type]: (state: TodoState, { payload }) => {
       state.loading = false;
       if (payload) {
         const { _id, title } = payload as { _id: number; title: string };
         state.data[getIndex(_id, state.data)].title = title;
       }
-    });
-    builder.addCase(editTodo.rejected, (state: TodoState) => {
+    },
+    [editTodo.rejected.type]: (state: TodoState) => {
       state.loading = false;
-    });
+    },
+
+    [toggleCompleted.pending.type]: (state: TodoState) => {
+      state.loading = true;
+    },
+    [toggleCompleted.fulfilled.type]: (state: TodoState, { payload }) => {
+      state.loading = false;
+      if (payload) {
+        const { _id, completed } = payload as { _id: number; completed: boolean };
+        state.data[getIndex(_id, state.data)].completed = completed;
+        state.completed = state.data.filter((item) => item.completed).length;
+      }
+    },
+    [toggleCompleted.rejected.type]: (state: TodoState) => {
+      state.loading = false;
+    }
   }
 });
 
-export const { setCompleted } = todoSlice.actions;
+// export const {} = todoSlice.actions;
 
 export default todoSlice.reducer;

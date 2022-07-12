@@ -23,7 +23,7 @@ const App = () => {
         <div className="header-form-wrapper">
           <TodoAddForm loading={loading} />
           <button className="load-todos-btn" onClick={loadAllTodos} disabled={loading}>
-            Load todos
+            Update todos
           </button>
         </div>
         <CompletedCounter total={total} completed={completed} />
