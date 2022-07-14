@@ -6,23 +6,17 @@ export type TodoItem = {
   completed: boolean;
 };
 
-export type TodoDto = {
-  _id?: number;
-  title?: string;
-  completed?: boolean;
+export type ErrorRecord = {
+  status: string | number | undefined;
+  message: string;
 };
-
-// const initialState: TodoItem[] = [
-//   { id: 0, title: 'Drink coffee', completed: true },
-//   { id: 1, title: 'Todo list coding', completed: true },
-//   { id: 2, title: 'Check mail', completed: false }
-// ];
 
 type TodoState = {
   data: TodoItem[];
   loading: boolean;
   total: number;
   completed: number;
+  error?: ErrorRecord;
 };
 
 const initialState: TodoState = {
@@ -32,73 +26,132 @@ const initialState: TodoState = {
   completed: 0
 };
 
-export const fetchTodos = createAsyncThunk('todos/getAll', async () => {
-  // const response = await fetch('https://jsonplaceholder.typicode.com/todos');
-  const response = await fetch('http://localhost:3001/api/todos', {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  return response.json();
-});
+export const fetchTodos = createAsyncThunk<
+  TodoItem[],
+  void,
+  {
+    rejectValue: ErrorRecord;
+  }
+>('todos/getTodos', async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch('http://localhost:3001/api/todos', {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-const getIndex = (id: number, arr: TodoItem[]) => {
-  return arr.findIndex((item) => item._id === id);
-};
-
-export const addTodo = createAsyncThunk('todos/addTodo', async (payload: TodoDto) => {
-  const response = await fetch('http://localhost:3001/api/todos', {
-    method: 'POST',
-    body: JSON.stringify({ title: payload.title }),
-    headers: {
-      'Content-Type': 'application/json'
+    if (response.ok) {
+      return response.json();
+    } else {
+      return rejectWithValue({
+        status: response.status ?? undefined,
+        message: response.statusText
+      });
     }
-  });
-  if (response.ok) {
-    return response.json();
+  } catch (err) {
+    const {
+      response: { data, status }
+    } = err as unknown as {
+      response: { data: string; status: number };
+    };
+
+    return rejectWithValue({
+      status: status,
+      message: data
+    });
   }
 });
 
-export const deleteTodo = createAsyncThunk('todos/deleteTodo', async (payload: TodoDto) => {
-  const response = await fetch('http://localhost:3001/api/todos/' + payload._id, {
+const getIndex = (id: number, arr: TodoItem[]): number => {
+  return arr.findIndex((item) => item._id === id);
+};
+
+export const addTodo = createAsyncThunk<
+  Partial<TodoItem>,
+  Partial<TodoItem>,
+  {
+    rejectValue: ErrorRecord;
+  }
+>('todos/addTodo', async (todo: Partial<TodoItem>, { rejectWithValue }) => {
+  try {
+    const response = await fetch('http://localhost:3001/api/todos', {
+      method: 'POST',
+      body: JSON.stringify({ title: todo.title }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      return rejectWithValue({
+        status: response.status ?? undefined,
+        message: response.statusText
+      });
+    }
+  } catch (err) {
+    const {
+      response: { data, status }
+    } = err as unknown as {
+      response: { data: string; status: number };
+    };
+
+    return rejectWithValue({
+      status: status,
+      message: data
+    });
+  }
+});
+
+export const deleteTodo = createAsyncThunk('todos/deleteTodo', async (item: Partial<TodoItem>) => {
+  const response = await fetch('http://localhost:3001/api/todos/' + item._id, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json'
     }
   });
   if (response.ok) {
-    return payload._id;
+    return item._id;
   }
 });
 
-export const editTodo = createAsyncThunk('todos/editTodo', async (payload: TodoDto) => {
-  const response = await fetch('http://localhost:3001/api/todos/' + payload._id, {
+export const editTodo = createAsyncThunk('todos/editTodo', async (item: Partial<TodoItem>) => {
+  const response = await fetch('http://localhost:3001/api/todos/' + item._id, {
     method: 'PUT',
-    body: JSON.stringify({ title: payload.title }),
+    body: JSON.stringify({ title: item.title }),
     headers: {
       'Content-Type': 'application/json'
     }
   });
   if (response.ok) {
-    return { _id: payload._id, title: payload.title };
+    return { _id: item._id, title: item.title };
   }
 });
 
-export const toggleCompleted = createAsyncThunk(
-  'todos/toggleCompleted',
-  async (payload: TodoDto) => {
-    const response = await fetch('http://localhost:3001/api/todos/' + payload._id, {
-      method: 'PUT',
-      body: JSON.stringify({ completed: payload.completed }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    if (response.ok) {
-      return { _id: payload._id, completed: payload.completed };
-    }
+export const toggleCompleted = createAsyncThunk<
+  Partial<TodoItem>,
+  Partial<TodoItem>,
+  {
+    rejectValue: ErrorRecord;
   }
-);
+>('todos/toggleCompleted', async (item: Partial<TodoItem>, { rejectWithValue }) => {
+  const response = await fetch('http://localhost:3001/api/todos/' + item._id, {
+    method: 'PUT',
+    body: JSON.stringify({ completed: item.completed }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (response.ok) {
+    return { _id: item._id, completed: item.completed };
+  } else {
+    return rejectWithValue({
+      status: response.status,
+      message: response.statusText
+    });
+  }
+});
 
 export const todoSlice = createSlice({
   name: 'todo',
@@ -110,13 +163,17 @@ export const todoSlice = createSlice({
       state.loading = true;
     },
     [fetchTodos.fulfilled.type]: (state: TodoState, { payload }) => {
-      state.data = payload.data;
       state.loading = false;
+
+      if (!payload) return;
+
+      state.data = payload.data;
       state.total = state.data.length;
       state.completed = state.data.filter((item) => item.completed).length;
     },
-    [fetchTodos.rejected.type]: (state: TodoState) => {
+    [fetchTodos.rejected.type]: (state: TodoState, { payload }) => {
       state.loading = false;
+      state.error = { ...payload };
     },
 
     [addTodo.pending.type]: (state: TodoState) => {
@@ -127,8 +184,9 @@ export const todoSlice = createSlice({
       state.data.push(payload.data);
       state.total = state.data.length;
     },
-    [addTodo.rejected.type]: (state: TodoState) => {
+    [addTodo.rejected.type]: (state: TodoState, { payload }) => {
       state.loading = false;
+      state.error = { ...payload };
     },
 
     [deleteTodo.pending.type]: (state: TodoState) => {
@@ -154,8 +212,9 @@ export const todoSlice = createSlice({
         state.data[getIndex(_id, state.data)].title = title;
       }
     },
-    [editTodo.rejected.type]: (state: TodoState) => {
+    [editTodo.rejected.type]: (state: TodoState, { payload }) => {
       state.loading = false;
+      state.error = { ...payload };
     },
 
     [toggleCompleted.pending.type]: (state: TodoState) => {
@@ -169,8 +228,9 @@ export const todoSlice = createSlice({
         state.completed = state.data.filter((item) => item.completed).length;
       }
     },
-    [toggleCompleted.rejected.type]: (state: TodoState) => {
+    [toggleCompleted.rejected.type]: (state: TodoState, { payload }) => {
       state.loading = false;
+      state.error = { ...payload };
     }
   }
 });

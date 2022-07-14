@@ -1,9 +1,11 @@
-import { IsString, IsBoolean } from 'class-validator';
+import { IsString, IsBoolean, IsOptional } from 'class-validator';
 
 export class UpdateTodoDto {
   @IsString()
-  readonly title: string;
+  @IsOptional()
+  readonly title?: string;
 
   @IsBoolean()
-  readonly completed: boolean;
+  @IsOptional()
+  readonly completed?: boolean;
 }

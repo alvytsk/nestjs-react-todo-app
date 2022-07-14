@@ -8,11 +8,11 @@ export type TodoDocument = Todo & Document;
 export class Todo {
   @Prop()
   @ApiProperty({ example: 'New todo', description: 'Todo text' })
-  title: string;
+  title?: string;
 
   @Prop()
   @ApiProperty({ example: true, description: 'Todo status' })
-  completed: boolean;
+  completed?: boolean;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);
