@@ -26,9 +26,9 @@ Client based on [my boilerplate for Webpack/React/Redux app](https://github.com/
 ### Server
 - [ ] Add unit tests
 - [ ] Add integration tests
-- [ ] Dockerize
+- [x] Dockerize
 - [ ] Add config service with .env support
 - [ ] Add data validation (Joi lib)
 - [ ] Publish to Heroku
-- [ ] Auto generate Swagger API docs
+- [x] Auto generate Swagger API docs
 

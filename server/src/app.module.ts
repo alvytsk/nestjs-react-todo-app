@@ -5,7 +5,7 @@ import { TodosModule } from './todos/todos.module';
 @Module({
   imports: [
     TodosModule,
-    MongooseModule.forRoot('mongodb://todos:todos@localhost:27017/todos'),
+    MongooseModule.forRoot('mongodb://todos:todos@todos-mongodb:27017/todos'),
   ],
   controllers: [],
   providers: [],

@@ -1,8 +1,8 @@
-version: '3'
+version: '3.8'
 services:
   mongo:
-    image: 'mongo'
-    container_name: 'todos-mongo'
+    image: 'mongo:latest'
+    container_name: todos-mongodb
     environment:
       - MONGO_INITDB_DATABASE=todos
       - MONGO_INITDB_ROOT_USERNAME=admin
@@ -12,3 +12,28 @@ services:
       - ./mongo-data:/data/db
     ports:
       - 27017-27019:27017-27019
+    networks:
+      - todos-network
+
+  server-dev:
+    image: todos-nestjs-dev:1.0.0 
+    container_name: todos-nestjs-dev
+    build: 
+      context: ./server
+      dockerfile: ./Dockerfile
+    entrypoint: ["yarn", "start:dev"]
+    ports: 
+      - 3001:3001
+      - 3002:9229
+    networks:
+      - todos-network
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+networks:
+  todos-network:
+    driver: bridge
