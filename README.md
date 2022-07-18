@@ -22,7 +22,7 @@ Client based on [my boilerplate for Webpack/React/Redux app](https://github.com/
 ### Client
 - [ ] Add unit tests
 - [ ] Separate API layer
-- [ ] Dockerize
+- [x] Dockerize
 ### Server
 - [ ] Add unit tests
 - [ ] Add integration tests

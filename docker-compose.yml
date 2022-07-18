@@ -16,8 +16,8 @@ services:
       - todos-network
 
   server-dev:
-    image: todos-nestjs-dev:1.0.0 
-    container_name: todos-nestjs-dev
+    image: todos-server
+    container_name: todos-server-dev
     build: 
       context: ./server
       dockerfile: ./Dockerfile
@@ -28,9 +28,28 @@ services:
     networks:
       - todos-network
     depends_on:
-      - mongodb
+      - mongo
     volumes:
       - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  client-dev:
+    image: todos-client
+    container_name: todos-client-dev
+    build: 
+      context: ./client
+      dockerfile: ./Dockerfile
+    entrypoint: ["yarn", "start"]
+    ports: 
+      - 3000:3000
+    networks:
+      - todos-network
+    depends_on:
+      - mongo
+      - server-dev
+    volumes:
+      - ./client:/usr/src/app
       - /usr/src/app/node_modules
     restart: unless-stopped
 
