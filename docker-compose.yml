@@ -15,11 +15,11 @@ services:
     networks:
       - todos-network
 
-  server-dev:
-    image: todos-server
-    container_name: todos-server-dev
+  backend:
+    image: todos-backend
+    container_name: todos-backend-dev
     build: 
-      context: ./server
+      context: ./backend
       dockerfile: ./Dockerfile
     entrypoint: ["yarn", "start:dev"]
     ports: 
@@ -30,15 +30,15 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ./server:/usr/src/app
+      - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     restart: unless-stopped
 
-  client-dev:
-    image: todos-client
-    container_name: todos-client-dev
+  frontend:
+    image: todos-frontend
+    container_name: todos-frontend-dev
     build: 
-      context: ./client
+      context: ./frontend
       dockerfile: ./Dockerfile
     entrypoint: ["yarn", "start"]
     ports: 
@@ -47,7 +47,7 @@ services:
       - todos-network
     depends_on:
       - mongo
-      - server-dev
+      - backend
     volumes:
       - ./client:/usr/src/app
       - /usr/src/app/node_modules
