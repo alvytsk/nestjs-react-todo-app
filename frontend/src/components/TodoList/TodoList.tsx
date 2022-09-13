@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import TodoItem from './TodoItem';
 import { fetchTodos } from '~/state/todoSlice';
-import Spinner from './Spinner';
+import Spinner from '../Spinner/Spinner';
 import { useAppDispatch, useAppSelector } from '~/hooks/state';
 
 const TodoList = () => {
@@ -16,11 +16,7 @@ const TodoList = () => {
 
   return (
     <div className="todo-list">
-      {todos.loading && (
-        <div className="spinner-wrapper">
-          <Spinner />
-        </div>
-      )}
+      {todos.loading && <Spinner />}
       {todos.data.map((item) => (
         <TodoItem key={item._id} {...item} />
       ))}

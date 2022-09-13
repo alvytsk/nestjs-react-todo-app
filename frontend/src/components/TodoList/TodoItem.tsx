@@ -4,17 +4,12 @@ import { useAppDispatch } from '~/hooks/state';
 
 const TodoItem = (item: TodoItem) => {
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [editBtnTitle, setEditBtnTitle] = useState<string>('Edit');
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState<string>(item.title);
   const inputRef = useRef<HTMLInputElement>(null);
   const checkboxRef = useRef<HTMLInputElement>(null);
 
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    setEditBtnTitle(editMode ? 'Done' : 'Edit');
-  }, [editMode]);
 
   React.useEffect(() => {
     if (focused) {
@@ -24,27 +19,41 @@ const TodoItem = (item: TodoItem) => {
     }
   }, [focused]);
 
-  const onTodoDelete = (event) => {
+  const onTodoDelete = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
     dispatch(deleteTodo({ _id: item._id }));
   };
 
-  const onTodoEdit = (event) => {
+  const onLostFocus = (
+    event: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLElement>
+  ) => {
+    if (focused) {
+      setFocused(false);
+      if (event.type === 'click') setEditMode(false);
+      else
+        setTimeout(() => {
+          if (editMode) setEditMode(false);
+        }, 150);
+    }
+  };
+
+  const onTodoEdit = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
 
     if (editMode) {
-      setFocused(false);
-      dispatch(
-        editTodo({
-          _id: item._id,
-          title: value
-        })
-      );
+      onLostFocus(event);
+      if (item.title !== value) {
+        dispatch(
+          editTodo({
+            _id: item._id,
+            title: value
+          })
+        );
+      }
     } else {
       setFocused(true);
+      setEditMode(true);
     }
-
-    setEditMode(!editMode);
   };
 
   const onKeyDown = (event) => {
@@ -53,16 +62,7 @@ const TodoItem = (item: TodoItem) => {
     }
   };
 
-  const onLostFocus = (event) => {
-    if (focused) {
-      setFocused(false);
-      setTimeout(() => {
-        if (editMode) setEditMode(false);
-      }, 50);
-    }
-  };
-
-  const onTodoCompleted = (event) => {
+  const onTodoCompleted = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (item.completed !== event.target.checked) {
       dispatch(
         toggleCompleted({
@@ -75,7 +75,9 @@ const TodoItem = (item: TodoItem) => {
     checkboxRef.current?.blur();
   };
 
-  const onItemClick = (event) => {
+  const onItemClick = (
+    event: React.MouseEvent<HTMLElement> & React.ChangeEvent<HTMLInputElement>
+  ) => {
     /* Checkbox has its own handler */
     if (event.target.type === 'checkbox') return;
     if (editMode) return;
@@ -88,7 +90,7 @@ const TodoItem = (item: TodoItem) => {
     );
   };
 
-  const completedAndNotEditing = (item) => item.completed && !editMode;
+  const completedAndNotEditing = (item: TodoItem) => item.completed && !editMode;
 
   return (
     <div className="todo-item" onClick={onItemClick}>
@@ -112,7 +114,7 @@ const TodoItem = (item: TodoItem) => {
         disabled={!editMode}
       />
       <div className="todo-btns-wrapper">
-        <button onClick={onTodoEdit}>{editBtnTitle}</button>
+        <button onClick={onTodoEdit}>{editMode ? 'Done' : 'Edit'}</button>
         <button className="delete-btn" onClick={onTodoDelete}>
           x
         </button>

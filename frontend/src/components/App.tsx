@@ -2,7 +2,7 @@ import React from 'react';
 import './app.scss';
 import CompletedCounter from './CompletedCounter';
 import TodoAddForm from './TodoAddForm';
-import TodoList from './TodoList';
+import TodoList from './TodoList/TodoList';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '~/state';
 import { RootState } from '~/state';
